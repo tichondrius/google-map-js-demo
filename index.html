@@ -14,8 +14,8 @@
     <div class="search-container">
       <input type="text" ng-model="searchValue" name="search-bar"/> <button ng-click="searchLocation()">Tìm địa điểm</button>
     </div>
-    <div class="current-location" ng-if="currentLocation">
-      <input type="text" placeholder="lat"  ng-model="currentLocation.location.lat" /> <input type="text" placeholder="lng"  ng-model="currentLocation.location.lng" /> <button ng-click="searchByCoor()">Set vị trí</button>
+    <div class="current-location">
+      <input type="text" placeholder="lat"  ng-model="latLng.lat" /> <input type="text" placeholder="lng"  ng-model="latLng.lng" /> <button ng-click="searchByCoor()">Set vị trí</button>
     </div>
     <div class="location-list">
       <div class="form-load">
@@ -36,7 +36,6 @@
               <button ng-click="directionLocation(location)">Chỉ đường đê</button>
             </div>
           </div>
-          
         </div>
       </div>
       <div id="text-directions">

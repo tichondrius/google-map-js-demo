@@ -9,13 +9,13 @@ body {
 }
 
 #map {
-  flex: 8;
+  width: 100%;
   height: 100vh;
   background: green;
 }
 
 .location-list {
-  flex: 2;
+  width: 450px;
   height: 100vh;
   overflow: scroll;
   /* background: pink;  */

@@ -10,7 +10,14 @@ app.controller('MapController', function MapController($scope) {
   $scope.currentLocationMaker = null;
   $scope.activeLocationId = -1;
   $scope.searchValue = '';
-
+  $scope.latLng = {
+    lat: '',
+    lng: '',
+  } 
+  $scope.setLatLng = ({lat, lng}) => {
+    $scope.latLng.lat = lat;
+    $scope.latLng.lng = lng;
+  } 
 
   // Xử lý sự kiện click vào nút load location
   $scope.loadLocation = () => {
@@ -28,7 +35,9 @@ app.controller('MapController', function MapController($scope) {
   $scope.clickLocation = (location) => {
     $scope.closeAllInfoWindow();
     // Tìm maker tương tứng, và show thông tin bên map
-    const locationMaker = $scope.locationMakers.find(maker => maker.location.id === location.id);
+    const locationMaker = $scope.locationMakers.find(
+      maker => maker.location.id === location.id);
+
     if (locationMaker) {
       locationMaker.openInfoWindow();
     }
@@ -48,8 +57,13 @@ app.controller('MapController', function MapController($scope) {
       $scope.currentLocationMaker.closeInfoWindow();
     }
     $scope.currentLocation = location;
+    $scope.setLatLng(location.location);
     $scope.currentLocation.type = 'MY_LOCATION';
-    window.map.setCenter(new google.maps.LatLng(location.location.lat, location.location.lng));
+    window.map
+      .setCenter(new google.maps.LatLng(
+        location.location.lat,
+        location.location.lng));
+        
     $scope.currentLocationMaker = createMaker($scope.currentLocation);
     
   }
@@ -63,29 +77,47 @@ app.controller('MapController', function MapController($scope) {
       })
       
     }).catch(error => {
-      alert('Không tìm thấy địa điểm muốn tìm');
+       switch(error) {
+          case 'NOT_FOUND':
+            alert('Khó quá tìm không ra, bỏ qua nhé');
+            break;
+          default:
+            alert('Khó quá tìm không ra, bỏ qua nhé'); 
+        }
     });
   }
   $scope.searchByCoor = () => {
-    if ($scope.currentLocation) {
-      const { lat, lng } = $scope.currentLocation.location;
-      geocodeLatLng({ lat: lat.toString(), lng: lng.toString()}).then(location => {
+      const { lat, lng } = $scope.latLng;
+      geocodeLatLng({ lat: lat.toString(), lng: lng.toString()})
+        .then(location => {
         $scope.$apply(() => {
           $scope.setNewCurrentLocation(location);
         })
       }).catch(error => {
-        alert('Không tìm thấy địa điểm muốn tìm');
-      })
-
-    }
+        switch(error) {
+          case 'FORMAT_ERROR':
+            alert('Nhập tọa độ không đúng format nhé');
+            break;
+          case 'NOT_FOUND':
+            alert('Khó quá tìm không ra, bỏ qua nhé');
+            break;
+          default:
+            alert('Khó quá tìm không ra, bỏ qua nhé'); 
+        }
+        if ($scope.currentLocation) {
+          $scope.$apply(() => {
+            $scope.setLatLng($scope.currentLocation.location);
+          });
+        }
+     })
   }
-
   
   // Xử lý sự kiện click vào nút chỉ đường locaton item
   $scope.directionLocation = (location) => {
     const { directionsDisplay, directionsService } = window;
     window.directionsDisplay.setMap(null);
-    window.directionsDisplay.setPanel(document.getElementById('text-directions'));
+    window.directionsDisplay
+      .setPanel(document.getElementById('text-directions'));
     window.directionsDisplay.setMap(window.map);
     window.directionsService.route({
       origin: $scope.currentLocation.location, // Điểm đi là vị trí hiện tại
@@ -108,6 +140,10 @@ app.controller('MapController', function MapController($scope) {
 const geocodeLatLng = ({ lat, lng}) => new Promise((resolve, reject) => {
 
   var latlng = {lat: parseFloat(lat), lng: parseFloat(lng)};
+  if (Number.isNaN(latlng.lat) || Number.isNaN(latlng.lng)) {
+    reject("FORMAT_ERROR");
+    return;
+  }
   window.geoCoder.geocode({'location': latlng}, function(results, status) {
     if (status === 'OK') {
       if (Array.isArray(results) && results.length > 0) {
@@ -177,12 +213,21 @@ const addEventForMaker = (maker) => {
 
 
 const makeContentForMaker = (location) => {
-  return `
-    <div class="map-location-container">
-      <h4>${location.name}</h4>
-      ${ location.image ? `<img src="images/${location.image}"></img>` : ''}
-    </div>
-  `
+  switch(location.type) {
+    case 'MY_LOCATION': 
+      return `
+        <div class="map-location-container">
+          <h4>Vị trí của bạn: ${location.name}</h4>
+        </div>
+      `;
+    default: 
+      return `
+        <div class="map-location-container">
+          <h4>${location.name}</h4>
+          <img src="images/${location.image}"></img>
+        </div>
+      `;
+  }
 }
 
 const createMaker = location => {
