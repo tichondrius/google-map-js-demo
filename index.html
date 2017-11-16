@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Google Map JS API - Demo</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="js/lib/angular.min.js"></script>
+  </head>
+<body ng-app="googleMap">
+
+  <div class="container" ng-controller="MapController">
+    <div id="map">
+    </div>
+    <div class="search-container">
+      <input type="text" ng-model="searchValue" name="search-bar"/> <button ng-click="searchLocation()">Tìm địa điểm</button>
+    </div>
+    <div class="current-location" ng-if="currentLocation">
+      <input type="text" placeholder="lat"  ng-model="currentLocation.location.lat" /> <input type="text" placeholder="lng"  ng-model="currentLocation.location.lng" /> <button ng-click="searchByCoor()">Set vị trí</button>
+    </div>
+    <div class="location-list">
+      <div class="form-load">
+        <button ng-click="loadLocation()" >Load địa điểm</button>
+      </div>
+      <div ng-repeat="location in locations">
+        <div class="location-item location-id-{{location.id}}" ng-click="clickLocation(location)">
+          <div class="location-item-image">
+            <img ng-src="images/{{location.image}}"/>
+          </div>
+          <div class ="location-info">
+            <h3>{{location.name}}</h3>
+            <p>{{location.desc}}
+              <br />
+              Loại phòng: {{location.type}}
+            </p>
+            <div ng-if="activeLocationId === location.id">
+              <button ng-click="directionLocation(location)">Chỉ đường đê</button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      <div id="text-directions">
+      </div>
+    </div>
+  </div>
+
+  <!-- scripts -->
+  <script src="/js/initMap.js"></script>
+  <script src="/js/angular.js"></script>   
+  <script src="https://maps.googleapis.com/maps/api/js?language=vi&key=AIzaSyCM6d43YKFPIG5UlyIEZYhU6qCsfir8zrs&callback=initMap"
+    async defer></script> 
+</body>
+
+</html>
