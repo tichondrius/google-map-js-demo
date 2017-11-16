@@ -12,11 +12,15 @@
     <div id="map">
     </div>
     <div class="search-container">
-      <input type="text" ng-model="searchValue" name="search-bar"/> <button ng-click="searchLocation()">Tìm địa điểm</button>
-    </div>
+      <form>
+       <input type="text" ng-model="searchValue" name="search-bar"/> <button type="submit" ng-click="searchLocation()">Tìm địa điểm</button>
+      </form>
+      </div>
     <div class="current-location">
-      <input type="text" placeholder="lat"  ng-model="latLng.lat" /> <input type="text" placeholder="lng"  ng-model="latLng.lng" /> <button ng-click="searchByCoor()">Set vị trí</button>
-    </div>
+      <form>
+        <input type="text" placeholder="lat"  ng-model="latLng.lat" /> <input type="text" placeholder="lng"  ng-model="latLng.lng" /> <button type="submit" ng-click="searchByCoor()">Set vị trí</button>
+      </form>
+      </div>
     <div class="location-list">
       <div class="form-load">
         <button ng-click="loadLocation()" >Load địa điểm</button>
