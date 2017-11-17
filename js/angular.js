@@ -1,5 +1,14 @@
 const app = angular.module('googleMap', []);
+const TYPE_LOCATION = {
+  MY_LOCATION: 'MY_LOCATION',
+  MOTEL: 'MOTEL',
+  HOTEL: 'HOTEL',
+};
 
+const TYPE_ERROR = {
+  NOT_FOUND: 'NOT_FOUND',
+  FORMAT_ERROR: 'FORMAT_ERROR',
+}
 
 
 
@@ -29,13 +38,13 @@ app.controller('MapController', function MapController($scope) {
         lng: coords.longitude,
       }).then((location) => {
         $scope.$apply(() => {
-          $scope.setNewCurrentLocation(currentLocation);
+          $scope.setNewCurrentLocation(location);
         });
       }).catch(error => {
-        console.log('Không thể lấy vị trí hiện tại của bạn');
+        alert('Không thể lấy vị trí hiện tại của bạn');
       });
     });
-  }  
+  } else alert('Không thể lấy vị trí hiện tại của bạn');
 
    
   // Xử lý sự kiện click vào nút load location
@@ -44,10 +53,6 @@ app.controller('MapController', function MapController($scope) {
     $scope.locations = loadLocations();
     // Pin marker ứng với mỗi địa điểm vào map
     $scope.locationMakers = createLocationsMakers($scope.locations);
-    // Lấy vị trí hiện tại và tạo maker cho nó
-    const currentLocation = getCurrentLocation();
-    $scope.setNewCurrentLocation(currentLocation);
-    
     
   }
   // Xử lý xự kiện click vào location item
@@ -77,7 +82,7 @@ app.controller('MapController', function MapController($scope) {
     }
     $scope.currentLocation = location;
     $scope.setLatLng(location.location);
-    $scope.currentLocation.type = 'MY_LOCATION';
+    $scope.currentLocation.type = TYPE_LOCATION.MY_LOCATION;
     window.map
       .setCenter(new google.maps.LatLng(
         location.location.lat,
@@ -97,7 +102,7 @@ app.controller('MapController', function MapController($scope) {
       
     }).catch(error => {
        switch(error) {
-          case 'NOT_FOUND':
+          case TYPE_ERROR.NOT_FOUND:
             alert('Khó quá tìm không ra, bỏ qua nhé');
             break;
           default:
@@ -114,10 +119,10 @@ app.controller('MapController', function MapController($scope) {
         })
       }).catch(error => {
         switch(error) {
-          case 'FORMAT_ERROR':
+          case TYPE_ERROR.FORMAT_ERROR:
             alert('Nhập tọa độ không đúng format nhé');
             break;
-          case 'NOT_FOUND':
+          case TYPE_ERROR.NOT_FOUND:
             alert('Khó quá tìm không ra, bỏ qua nhé');
             break;
           default:
@@ -160,7 +165,7 @@ const geocodeLatLng = ({ lat, lng}) => new Promise((resolve, reject) => {
 
   var latlng = {lat: parseFloat(lat), lng: parseFloat(lng)};
   if (Number.isNaN(latlng.lat) || Number.isNaN(latlng.lng)) {
-    reject("FORMAT_ERROR");
+    reject(TYPE_ERROR.FORMAT_ERROR);
     return;
   }
   window.geoCoder.geocode({'location': latlng}, function(results, status) {
@@ -176,7 +181,7 @@ const geocodeLatLng = ({ lat, lng}) => new Promise((resolve, reject) => {
         });
       }
     }
-    reject('NOT_FOUND')
+    reject(TYPE_ERROR.NOT_FOUND)
   });
 });
 
@@ -199,7 +204,7 @@ const codeAddress = (address) => new Promise((resolve, reject) => {
         });
       }
     }
-    reject('NOT_FOUND');
+    reject(TYPE_ERROR.NOT_FOUND);
   });
 });
 
@@ -233,7 +238,7 @@ const addEventForMaker = (maker) => {
 
 const makeContentForMaker = (location) => {
   switch(location.type) {
-    case 'MY_LOCATION': 
+    case TYPE_LOCATION.MY_LOCATION: 
       return `
         <div class="map-location-container">
           <h4>Vị trí của bạn: ${location.name}</h4>
@@ -251,39 +256,28 @@ const makeContentForMaker = (location) => {
 
 const createMaker = location => {
   let maker;
-  if (location.type !== 'MY_LOCATION') {
-    maker = new google.maps.Marker({
-      position: location.location,
-      map: window.map,
-      icon: `/images/${location.type}.png`, // Image icon muốn sử dụng
-      animation: google.maps.Animation.DROP, // Animation muốn dùng
-    });
-    maker.location = location;
-  }
-  else { // Location hiện tại thì set icon maker mặc định
-    maker = new google.maps.Marker({
-      position: location.location,
-      map: window.map,
-      animation: google.maps.Animation.DROP, // Animation muốn dùng
-    });
-    maker.location = location;
-    
+  switch (location.type) {
+    case TYPE_LOCATION.MY_LOCATION:
+      maker = new google.maps.Marker({
+        position: location.location,
+        map: window.map,
+        animation: google.maps.Animation.DROP, // Animation muốn dùng
+      });
+      maker.location = location;
+      break;
+    default:
+      maker = new google.maps.Marker({
+        position: location.location,
+        map: window.map,
+        icon: `/images/${location.type}.png`, // Image icon muốn sử dụng
+        animation: google.maps.Animation.DROP, // Animation muốn dùng
+      });
+      maker.location = location;
+      break;
   }
   addEventForMaker(maker)
   return maker
 }
-
-
-
-
-const getCurrentLocation = () => ({
-  name: 'Tôi là ai, đây là đâu...',
-  location: {
-    lat: 10.7598329,
-    lng: 106.6836861,
-  },
-  type: 'MY_LOCATION',
-});
 
 const loadLocations = () => [
   {
