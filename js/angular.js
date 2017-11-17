@@ -18,7 +18,26 @@ app.controller('MapController', function MapController($scope) {
     $scope.latLng.lat = lat;
     $scope.latLng.lng = lng;
   } 
+  
 
+  // Dùng geolocation HTML5 để lấy vị trí hiện tại
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(({ coords }) => {
+      // Dùng reverse geolocaton để search địa điểm hiện tại
+      geocodeLatLng({
+        lat: coords.latitude,
+        lng: coords.longitude,
+      }).then((location) => {
+        $scope.$apply(() => {
+          $scope.setNewCurrentLocation(currentLocation);
+        });
+      }).catch(error => {
+        console.log('Không thể lấy vị trí hiện tại của bạn');
+      });
+    });
+  }  
+
+   
   // Xử lý sự kiện click vào nút load location
   $scope.loadLocation = () => {
     // Load  địa điểm
